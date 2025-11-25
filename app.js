@@ -1,41 +1,34 @@
-const express = require('express');
+import express from "express";
 const app = express();
+export default app;
 
-// Sample employee data
-const employees = [
-  { id: 1, name: 'John Doe', position: 'Developer', department: 'Engineering' },
-  { id: 2, name: 'Jane Smith', position: 'Designer', department: 'Design' },
-  { id: 3, name: 'Bob Johnson', position: 'Manager', department: 'Operations' },
-  { id: 4, name: 'Alice Brown', position: 'Analyst', department: 'Finance' },
-  { id: 5, name: 'Charlie Wilson', position: 'HR Specialist', department: 'Human Resources' }
-];
+import employees from "#db/employees";
 
-// GET / - sends "Hello employees!"
-app.get('/', (req, res) => {
-  res.send('Hello employees!');
+app.get("/", (req, res) => {
+  res.send("Hello employees!");
 });
 
-// GET /employees - sends the array of employees
-app.get('/employees', (req, res) => {
-  res.json(employees);
+app.get("/employees", (req, res) => {
+  res.send(employees);
 });
 
-// GET /employees/random - sends a random employee
-app.get('/employees/random', (req, res) => {
+// Note: this middleware has to come first! Otherwise, Express will treat
+// "random" as the argument to the `id` parameter of /employees/:id.
+app.get("/employees/random", (req, res) => {
   const randomIndex = Math.floor(Math.random() * employees.length);
-  res.json(employees[randomIndex]);
+  res.send(employees[randomIndex]);
 });
 
-// GET /employees/:id - sends the employee with the given id
-app.get('/employees/:id', (req, res) => {
-  const employeeId = parseInt(req.params.id);
-  const employee = employees.find(emp => emp.id === employeeId);
-  
+app.get("/employees/:id", (req, res) => {
+  const { id } = req.params;
+
+  // req.params are always strings, so we need to convert `id` into a number
+  // before we can use it to find the employee
+  const employee = employees.find((e) => e.id === +id);
+
   if (!employee) {
-    return res.status(404).json({ message: 'Employee not found' });
+    return res.status(404).send("Employee not found");
   }
-  
-  res.json(employee);
-});
 
-module.exports = app;
+  res.send(employee);
+});
